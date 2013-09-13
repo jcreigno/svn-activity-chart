@@ -1,0 +1,12 @@
+{
+  "author": "jerome creignou",
+  "name": "svnlogchart",
+  "description": "activity chart based on svn logs and d3.js",
+  "version": "0.0.1",
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
