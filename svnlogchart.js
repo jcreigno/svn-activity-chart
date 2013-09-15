@@ -27,8 +27,13 @@
             + "V0" + "H" + (w0 + 1) * cellSize + "Z";
     }
     
-    var svg = d3.select("body").selectAll("svg")
-            .data(d3.range(2010, 2014))
+    function dateFromElement(d) {
+        return d.date.split('T')[0];
+    }
+    
+    function setupGraph(min, max) {
+        var svg = d3.select("body").selectAll("svg")
+            .data(d3.range(min, +max + 1))
             .enter().append("svg")
             .attr("width", width)
             .attr("height", height)
@@ -36,51 +41,59 @@
             .append("g")
             .attr("transform", "translate(" + ((width - cellSize * 53) / 2) + "," + (height - cellSize * 7 - 1) + ")");
 
-    svg.append("text")
-        .attr("transform", "translate(-6," + cellSize * 3.5 + ")rotate(-90)")
-        .style("text-anchor", "middle")
-        .text(function (d) {
-            return d;
-        });
+        svg.append("text")
+            .attr("transform", "translate(-6," + cellSize * 3.5 + ")rotate(-90)")
+            .style("text-anchor", "middle")
+            .text(function (d) {
+                return d;
+            });
+    
+        var rect = svg.selectAll(".day")
+            .data(function (d) {
+                return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+            })
+            .enter().append("rect")
+            .attr("class", "day")
+            .attr("width", cellSize)
+            .attr("height", cellSize)
+            .attr("x", function (d) {
+                return week(d) * cellSize;
+            })
+            .attr("y", function (d) {
+                return day(d) * cellSize;
+            })
+            .datum(format);
+    
+        rect.append("title")
+            .text(function (d) {
+                return d;
+            });
+    
+        svg.selectAll(".month")
+            .data(function (d) {
+                return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
+            })
+            .enter().append("path")
+            .attr("class", "month")
+            .attr("d", monthPath);
+        return rect;
+    }
 
-    var rect = svg.selectAll(".day")
-        .data(function (d) {
-            return d3.time.days(new Date(d, 0, 1), new Date(d + 1, 0, 1));
-        })
-        .enter().append("rect")
-        .attr("class", "day")
-        .attr("width", cellSize)
-        .attr("height", cellSize)
-        .attr("x", function (d) {
-            return week(d) * cellSize;
-        })
-        .attr("y", function (d) {
-            return day(d) * cellSize;
-        })
-        .datum(format);
-
-    rect.append("title")
-        .text(function (d) {
-            return d;
-        });
-
-    svg.selectAll(".month")
-        .data(function (d) {
-            return d3.time.months(new Date(d, 0, 1), new Date(d + 1, 0, 1));
-        })
-        .enter().append("path")
-        .attr("class", "month")
-        .attr("d", monthPath);
 
     d3.xml("data-maven.xml", function (error, xml) {
-        var raw = xml.getElementsByTagName("logentry");
-        var min = raw[0];
-        var max = raw[raw.length - 1];
+        var raw = Array.prototype.slice.apply(xml.getElementsByTagName("logentry"))
+            .map(function (e) {
+                return {
+                    author: e.getElementsByTagName('author')[0].textContent,
+                    date: e.getElementsByTagName('date')[0].textContent,
+                    msg: e.getElementsByTagName('msg')[0].textContent
+                };
+            });
+        var max = dateFromElement(raw[0]).split('-')[0];
+        var min = dateFromElement(raw[raw.length - 1]).split('-')[0];
+        var rect = setupGraph(min, max);
         var data = d3.nest()
-            .key(function (d) {
-                var str = d.getElementsByTagName('date')[0].textContent;
-                return str.split('T')[0];
-            })
+            .key(dateFromElement)
             .rollup(function (d) {
                 return d.length;
             })
