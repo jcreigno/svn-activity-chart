@@ -1,0 +1,26 @@
+{
+  "name": "svnlogchart",
+  "version": "0.0.1",
+  "homepage": "https://github.com/jcreigno/svn-activity-chart",
+  "authors": [
+    "jerome creignou <jerome.creignou@gmail.com>"
+  ],
+  "description": "svn activity log chart",
+  "main": "svnlogchart.js",
+  "keywords": [
+    "svn",
+    "log",
+    "chart"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.3.3"
+  }
+}

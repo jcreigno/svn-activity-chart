@@ -3,7 +3,9 @@
   "name": "svnlogchart",
   "description": "activity chart based on svn logs and d3.js",
   "version": "0.0.1",
-  "dependencies": {},
+  "dependencies": {
+    "node-static": "~0.7.1"
+  },
   "devDependencies": {},
   "optionalDependencies": {},
   "engines": {

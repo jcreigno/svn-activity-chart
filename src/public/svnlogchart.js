@@ -32,7 +32,7 @@
     }
     
     function setupGraph(min, max) {
-        var svg = d3.select("body").selectAll("svg")
+        var svg = d3.select("#graph").selectAll("svg")
             .data(d3.range(min, +max + 1))
             .enter().append("svg")
             .attr("width", width)
@@ -76,7 +76,14 @@
             .enter().append("path")
             .attr("class", "month")
             .attr("d", monthPath);
+        
+        d3.select(self.frameElement).style("height", height * (+max + 1 - min));//"2910px");
+        
         return rect;
+    }
+    
+    function displayCommits(d) {
+        return d.msg || '&lt;empty commit message&gt;';
     }
 
 
@@ -86,7 +93,8 @@
                 return {
                     author: e.getElementsByTagName('author')[0].textContent,
                     date: e.getElementsByTagName('date')[0].textContent,
-                    msg: e.getElementsByTagName('msg')[0].textContent
+                    msg: e.getElementsByTagName('msg')[0].textContent,
+                    id : e.getAttributeNode('revision').value
                 };
             });
         var max = dateFromElement(raw[0]).split('-')[0];
@@ -94,22 +102,25 @@
         var rect = setupGraph(min, max);
         var data = d3.nest()
             .key(dateFromElement)
-            .rollup(function (d) {
-                return d.length;
-            })
             .map(raw);
 
         rect.filter(function (d) {
             return data.hasOwnProperty(d);
         })
             .attr("class", function (d) {
-                return "day " + color(data[d]);
+                return "day " + color(data[d].length);
+            }).on('click', function (d) {
+                var msg = d3.select('#messages').selectAll("div")
+                    .data(data[d], function (d) { return d.id; });
+                msg.enter().append('div')
+                    .attr('class', 'alert alert-info')
+                    .html(displayCommits);
+                msg.html(displayCommits);
+                msg.exit().remove();
             })
             .select("title")
             .text(function (d) {
-                return d + ": " + data[d];
+                return d + ": " + data[d].length + ' commits';
             });
     });
-
-    d3.select(self.frameElement).style("height", "2910px");
 }(window.self, window.d3));
